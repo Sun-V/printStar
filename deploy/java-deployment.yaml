@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: java
+    
+    tier: backend
+  name: ks-sample-java
+  namespace: kubesphere-sample-dev
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java
+      
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: java
+        
+        tier: backend
+    spec:
+      containers:
+        - env:
+            - name: CACHE_IGNORE
+              value: js|html
+            - name: CACHE_PUBLIC_EXPIRATION
+              value: 3d
+          image: $REGISTRY/$PROJECT_NAME/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            timeoutSeconds: 100
+            failureThreshold: 30
+            periodSeconds: 5
+          imagePullPolicy: Always
+          name: print-star
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 300m
+              memory: 600Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
